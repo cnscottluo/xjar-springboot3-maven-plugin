@@ -12,7 +12,7 @@ public abstract class XAntEntryFilter implements XEntryFilter<JarArchiveEntry> {
     protected XAntEntryFilter(String ant) {
         String regex = ant;
         for (String symbol : SYMBOLS) {
-            regex = regex.replace(symbol, '\\' + symbol);
+            regex = regex.replace(symbol, "\\" + symbol);
         }
         regex = regex.replace("?", ".{1}");
         regex = regex.replace("**/", "(.{0,}?/){0,}?");

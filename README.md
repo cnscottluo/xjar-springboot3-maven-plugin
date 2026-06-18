@@ -93,6 +93,7 @@ mvn xjar-springboot3:build -Dxjar.******
 | includes | `-Dxjar.includes` | 需要加密的资源（Ant 表达式） | 无 |
 | excludes | `-Dxjar.excludes` | 需要排除的资源（Ant 表达式） | 无 |
 | deletes | `-Dxjar.deletes` | 加密后删除的资源（glob 模式，支持 `../`） | 无 |
+| allowParentTraversal | `-Dxjar.allowParentTraversal` | 是否允许删除规则使用 `../` 向上级目录遍历 | `false` |
 
 ## 注意事项
 
@@ -100,4 +101,6 @@ mvn xjar-springboot3:build -Dxjar.******
 - 目前不支持 `spring-boot-maven-plugin` 配置中的：
     - `<executable>true</executable>`
     - `<embeddedLaunchScript>...</embeddedLaunchScript>`
+- `deletes` 会执行真实删除操作，请先在测试环境验证表达式。
+- 默认不允许 `../` 向上级目录删除，确需使用时请显式设置 `-Dxjar.allowParentTraversal=true`。
 - 强烈建议不要把密码明文写在 `pom.xml`，优先使用命令行 `-Dxjar.******` 传参。

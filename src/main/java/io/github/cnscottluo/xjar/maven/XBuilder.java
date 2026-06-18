@@ -68,6 +68,9 @@ public class XBuilder extends AbstractMojo {
     @Parameter(property = "xjar.deletes")
     private String[] deletes;
 
+    @Parameter(property = "xjar.allowParentTraversal", defaultValue = "false")
+    private boolean allowParentTraversal;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         Log log = getLog();
@@ -169,7 +172,7 @@ public class XBuilder extends AbstractMojo {
         }
     }
 
-    private void deleteMatchedFiles(File root, Log log) throws IOException {
+    private void deleteMatchedFiles(File root, Log log) throws IOException, MojoFailureException {
         if (XArray.isEmpty(deletes) || root == null) {
             return;
         }
@@ -179,7 +182,13 @@ public class XBuilder extends AbstractMojo {
         }
     }
 
-    private void deleteByPattern(Path baseRoot, String pattern, Log log) throws IOException {
+    /**
+     * Deletes files matched by glob patterns under the project directory.
+     * <p>
+     * This operation is destructive; please verify delete patterns carefully before production usage.
+     * Parent traversal via "../" is blocked by default and can be explicitly enabled via xjar.allowParentTraversal.
+     */
+    private void deleteByPattern(Path baseRoot, String pattern, Log log) throws IOException, MojoFailureException {
         if (pattern == null || pattern.isBlank()) {
             return;
         }
@@ -187,6 +196,10 @@ public class XBuilder extends AbstractMojo {
         String normalizedPattern = pattern.replace('\\', '/').trim();
         Path searchRoot = baseRoot;
         while (normalizedPattern.startsWith("../")) {
+            if (!allowParentTraversal) {
+                throw new MojoFailureException("Pattern '" + pattern + "' is not allowed because parent traversal is disabled. " +
+                        "Set -Dxjar.allowParentTraversal=true to enable it explicitly.");
+            }
             searchRoot = searchRoot.getParent() == null ? searchRoot : searchRoot.getParent();
             normalizedPattern = normalizedPattern.substring(3);
         }
@@ -203,6 +216,7 @@ public class XBuilder extends AbstractMojo {
 
         try (Stream<Path> stream = Files.walk(searchRoot)) {
             stream.sorted(Comparator.reverseOrder())
+                    .filter(path -> path.startsWith(searchRoot))
                     .filter(path -> matcher.matches(searchRoot.relativize(path)))
                     .forEach(path -> {
                         try {
