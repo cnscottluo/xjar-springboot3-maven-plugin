@@ -7,100 +7,111 @@
 - JDK 21+
 - Maven 3.9+
 
-## 插件坐标
+## 集成步骤
 
 ```xml
+
+<project>
+    <!-- 设置 jitpack.io 插件仓库 -->
+    <pluginRepositories>
+        <pluginRepository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </pluginRepository>
+    </pluginRepositories>
+    <!-- 添加 XJar Maven 插件 -->
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.github.cnscottluo</groupId>
+                <artifactId>xjar-springboot3-maven-plugin</artifactId>
+                <version>3.5.15</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>build</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <password>io.xjar</password>
+                            <!-- optional
+                            <algorithm/>
+                            <keySize/>
+                            <ivSize/>
+                            <includes>
+                                <include/>
+                            </includes>
+                            <excludes>
+                                <exclude/>
+                            </excludes>
+                            <sourceDir/>
+                            <sourceJar/>
+                            <targetDir/>
+                            <targetJar/>
+                            -->
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+
+```
+
+#### 也可以通过Maven命令单独执行 XJar 插件
+
+```text
+mvn xjar:build -Dxjar.password=io.xjar
+mvn xjar:build -Dxjar.password=io.xjar -Dxjar.targetDir=/directory/to/save/target.xjar
+```
+
+#### 但通常情况下是让XJar插件绑定到指定的phase中自动执行，这样就能在项目构建的时候自动构建出加密的包。
+
+```text
+mvn clean package -Dxjar.password=io.xjar
+mvn clean install -Dxjar.password=io.xjar -Dxjar.targetDir=/directory/to/save/target.xjar
+```
+
+## 强烈建议
+
+强烈建议不要在 pom.xml 的 xjar-maven-plugin 配置中写上密码，这样会导致打包出来的 xjar 包中的 pom.xml 文件保留着密码，极其容易暴露密码！强烈推荐通过
+mvn 命令来指定加密密钥！
+
+## 注意事项
+
+#### 不兼容 spring-boot-maven-plugin 的 executable = true 以及 embeddedLaunchScript
+
+```xml
+
 <plugin>
-    <groupId>io.github.cnscottluo</groupId>
-    <artifactId>xjar-springboot3-maven-plugin</artifactId>
-    <version>0.0.1</version>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-maven-plugin</artifactId>
+    <!-- 需要将executable和embeddedLaunchScript参数删除，目前还不能支持对该模式Jar的加密！后面可能会支持该方式的打包。 
+    <configuration>
+        <executable>true</executable>
+        <embeddedLaunchScript>...</embeddedLaunchScript>
+    </configuration>
+    -->
 </plugin>
-```
-
-## 使用方式
-
-建议先在项目中增加 JitPack 仓库（用于解析 `xjar-springboot3` 依赖）：
-
-```xml
-<repositories>
-    <repository>
-        <id>jitpack.io</id>
-        <url>https://jitpack.io</url>
-    </repository>
-</repositories>
-```
-
-
-```xml
-<build>
-    <plugins>
-        <plugin>
-            <groupId>io.github.cnscottluo</groupId>
-            <artifactId>xjar-springboot3-maven-plugin</artifactId>
-            <version>0.0.1</version>
-            <executions>
-                <execution>
-                    <goals>
-                        <goal>build</goal>
-                    </goals>
-                    <phase>package</phase>
-                    <configuration>
-                        <password>${xjar.password}</password>
-                        <!-- 可选参数
-                        <algorithm>AES/CBC/PKCS5Padding</algorithm>
-                        <keySize>128</keySize>
-                        <ivSize>128</ivSize>
-                        <includes>
-                            <include>BOOT-INF/classes/**</include>
-                        </includes>
-                        <excludes>
-                            <exclude>BOOT-INF/classes/static/**</exclude>
-                        </excludes>
-                        <sourceDir>${project.build.directory}</sourceDir>
-                        <sourceJar>${project.build.finalName}.jar</sourceJar>
-                        <targetDir>${project.build.directory}</targetDir>
-                        <targetJar>${project.build.finalName}.xjar</targetJar>
-                        <deletes>
-                            <delete>target/*.jar</delete>
-                        </deletes>
-                        -->
-                    </configuration>
-                </execution>
-            </executions>
-        </plugin>
-    </plugins>
-</build>
-```
-
-或直接命令执行：
-
-```bash
-mvn xjar-springboot3:build -Dxjar.******
 ```
 
 ## 参数说明
 
-| 参数 | 命令参数 | 说明 | 默认值 |
-| --- | --- | --- | --- |
-| password | `-Dxjar.password` | 加密密码（必填） | 无 |
-| algorithm | `-Dxjar.algorithm` | 加密算法 | `AES/CBC/PKCS5Padding` |
-| keySize | `-Dxjar.keySize` | 密钥长度 | `128` |
-| ivSize | `-Dxjar.ivSize` | 向量长度 | `128` |
-| sourceDir | `-Dxjar.sourceDir` | 源 JAR 目录 | `${project.build.directory}` |
-| sourceJar | `-Dxjar.sourceJar` | 源 JAR 文件名 | `${project.build.finalName}.jar` |
-| targetDir | `-Dxjar.targetDir` | 目标 JAR 目录 | `${project.build.directory}` |
-| targetJar | `-Dxjar.targetJar` | 目标 xjar 文件名 | `${project.build.finalName}.xjar` |
-| includes | `-Dxjar.includes` | 需要加密的资源（Ant 表达式） | 无 |
-| excludes | `-Dxjar.excludes` | 需要排除的资源（Ant 表达式） | 无 |
-| deletes | `-Dxjar.deletes` | 加密后删除的资源（glob 模式，支持 `../`） | 无 |
-| allowParentTraversal | `-Dxjar.allowParentTraversal` | 是否允许删除规则使用 `../` 向上级目录遍历 | `false` |
+| 参数名称      | 命令参数名称           | 参数说明           | 参数类型     | 缺省值                             | 示例值                                                     |
+|:----------|:-----------------|:---------------|:---------|:--------------------------------|:--------------------------------------------------------|
+| password  | -Dxjar.password  | 密码字符串          | String   | 必须                              | 任意字符串，io.xjar                                           |
+| algorithm | -Dxjar.algorithm | 加密算法名称         | String   | AES/CBC/PKCS5Padding            | JDK内置加密算法，如：AES/CBC/PKCS5Padding 和 DES/CBC/PKCS5Padding |
+| keySize   | -Dxjar.keySize   | 密钥长度           | int      | 128                             | 根据加密算法而定，56，128，256                                     |
+| ivSize    | -Dxjar.ivSize    | 密钥向量长度         | int      | 128                             | 根据加密算法而定，128                                            |
+| sourceDir | -Dxjar.sourceDir | 源jar所在目录       | File     | ${project.build.directory}      | 文件目录                                                    |
+| sourceJar | -Dxjar.sourceJar | 源jar名称         | String   | ${project.build.finalName}.jar  | 文件名称                                                    |
+| targetDir | -Dxjar.targetDir | 目标jar存放目录      | File     | ${project.build.directory}      | 文件目录                                                    |
+| targetJar | -Dxjar.targetJar | 目标jar名称        | String   | ${project.build.finalName}.xjar | 文件名称                                                    |
+| includes  | -Dxjar.includes  | 需要加密的资源路径表达式   | String[] | 无                               | com/company/project/** , mapper/*Mapper.xml , 支持Ant表达式  |
+| excludes  | -Dxjar.excludes  | 无需加密的资源路径表达式   | String[] | 无                               | static/** , META-INF/resources/** , 支持Ant表达式            |
+| deletes   | -Dxjar.deletes   | 加密后删除指定资源路径表达式 | String[] | 无                               | target/\*.jar, ../module/target/\*.jar, 支持Ant表达式        |
 
-## 注意事项
+* 指定加密算法的时候密钥长度以及向量长度必须在算法可支持范围内, 具体加密算法的密钥及向量长度请自行百度或谷歌.
+* 当 includes 和 excludes 同时使用时即加密在includes的范围内且排除了excludes的资源。
 
-- Spring Boot 工程检测到 `spring-boot-maven-plugin` 时会自动走 `XBoot.encrypt`。
-- 目前不支持 `spring-boot-maven-plugin` 配置中的：
-    - `<executable>true</executable>`
-    - `<embeddedLaunchScript>...</embeddedLaunchScript>`
-- `deletes` 会执行真实删除操作，请先在测试环境验证表达式。
-- 默认不允许 `../` 向上级目录删除，确需使用时请显式设置 `-Dxjar.allowParentTraversal=true`。
-- 强烈建议不要把密码明文写在 `pom.xml`，优先使用命令行 `-Dxjar.******` 传参。
