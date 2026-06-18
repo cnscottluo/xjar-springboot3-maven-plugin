@@ -6,7 +6,7 @@
 
     <groupId>com.github.cnscottluo</groupId>
     <artifactId>xjar-springboot3-maven-plugin</artifactId>
-    <version>0.0.1</version>
+    <version>3.5.15</version>
     <packaging>maven-plugin</packaging>
 
     <name>XJar SpringBoot3 Maven Plugin</name>
