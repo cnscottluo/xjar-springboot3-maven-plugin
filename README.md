@@ -1,0 +1,1 @@
+# xjar-springboot3-maven-plugin
