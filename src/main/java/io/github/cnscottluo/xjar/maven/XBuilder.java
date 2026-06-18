@@ -213,11 +213,12 @@ public class XBuilder extends AbstractMojo {
 
         log.info("Deleting file(s) matching pattern: " + searchRoot + "/" + normalizedPattern);
         PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + normalizedPattern);
+        Path finalSearchRoot = searchRoot;
 
-        try (Stream<Path> stream = Files.walk(searchRoot)) {
+        try (Stream<Path> stream = Files.walk(finalSearchRoot)) {
             stream.sorted(Comparator.reverseOrder())
-                    .filter(path -> path.startsWith(searchRoot))
-                    .filter(path -> matcher.matches(searchRoot.relativize(path)))
+                    .filter(path -> path.startsWith(finalSearchRoot))
+                    .filter(path -> matcher.matches(finalSearchRoot.relativize(path)))
                     .forEach(path -> {
                         try {
                             Files.deleteIfExists(path);
