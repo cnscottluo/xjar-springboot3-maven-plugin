@@ -18,7 +18,7 @@
         <maven.compiler.release>21</maven.compiler.release>
         <maven.plugin.api.version>3.9.8</maven.plugin.api.version>
         <maven.plugin.annotations.version>3.11.0</maven.plugin.annotations.version>
-        <xjar.springboot3.version>6caed8026af8e5890a24c703da6ebdfc444c3a81</xjar.springboot3.version>
+        <xjar.springboot3.version>3.5.15</xjar.springboot3.version>
     </properties>
 
     <repositories>
