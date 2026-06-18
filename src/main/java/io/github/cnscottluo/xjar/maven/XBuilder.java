@@ -157,9 +157,10 @@ public class XBuilder extends AbstractMojo {
         }
 
         Object configuration = plugin.getConfiguration();
-        if (!(configuration instanceof Xpp3Dom dom)) {
+        if (!(configuration instanceof Xpp3Dom)) {
             return;
         }
+        Xpp3Dom dom = (Xpp3Dom) configuration;
 
         Xpp3Dom executable = dom.getChild("executable");
         if (executable != null && "true".equalsIgnoreCase(executable.getValue())) {
