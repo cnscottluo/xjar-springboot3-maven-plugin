@@ -19,6 +19,18 @@
 
 ## 使用方式
 
+建议先在项目中增加 JitPack 仓库（用于解析 `xjar-springboot3` 依赖）：
+
+```xml
+<repositories>
+    <repository>
+        <id>jitpack.io</id>
+        <url>https://jitpack.io</url>
+    </repository>
+</repositories>
+```
+
+
 ```xml
 <build>
     <plugins>
@@ -88,4 +100,4 @@ mvn xjar-springboot3:build -Dxjar.******
 - 目前不支持 `spring-boot-maven-plugin` 配置中的：
     - `<executable>true</executable>`
     - `<embeddedLaunchScript>...</embeddedLaunchScript>`
-- 强烈建议不要把密码明文写在 `pom.xml`，优先使用 `-Dxjar.****** 传参。
+- 强烈建议不要把密码明文写在 `pom.xml`，优先使用命令行 `-Dxjar.******` 传参。
